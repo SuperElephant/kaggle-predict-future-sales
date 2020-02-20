@@ -227,7 +227,10 @@ class RNNNet(torch.nn.Module, Model):
                             F.mse_loss(results.clamp(0, 20), torch.Tensor(y_test.to_numpy()).squeeze())
                         ).item()
 
-                        test_moving_avg = sum(test_losses[-3:])/len(test_losses[-3:])
+                        if len(test_moving_avg) > 0:
+                            test_moving_avg = sum(test_losses[-3:])/len(test_losses[-3:])
+                        else:
+                            test_moving_avg = 10
 
                         if test_loss/test_moving_avg > 0.95 and decreases < max_decreases:
                             print(optimizer)
