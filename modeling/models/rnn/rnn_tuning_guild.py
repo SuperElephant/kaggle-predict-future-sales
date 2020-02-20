@@ -21,9 +21,9 @@ if run_type != "evaluate":
     test_set.drop([target_col, 'ID'], axis=1, inplace=True, errors='ignore')
 else:
     train_set_path = "data/processed_validation/train.parquet"
-    # It seems that taking it year back is a pretty good validation scheme.
-    train_set = read_parquet(train_set_path).query("date_block_num < 22")
-    test_set = read_parquet(train_set_path).query("date_block_num == 22")
+    test_set_path = "data/processed_validation/test.parquet"
+    train_set = read_parquet(train_set_path)  # .query("date_block_num < 22")
+    test_set = read_parquet(test_set_path)  # .query("date_block_num == 22")
 
 # Actual tuning parameters
 embedding_type = "starspace"
@@ -116,7 +116,7 @@ if run_type != "evaluate":
 else:
     # Validate, save model (just in case), print output
     validation = StandardValidation(target_col, model)
-    validation_result = validation.run(train_set, test_set, inner_train_validation=False, copy=False)
+    validation_result = validation.run(train_set, test_set, inner_train_validation=True, copy=False)
 
     torch.save(validation.model.state_dict(), "model.pt")
 

@@ -23,7 +23,7 @@
         embedding_type:
           description: "Type of embedding to use"
           choices: ["starspace", "wiki", "gensim"]
-          default: "starspace"
+          default: "wiki"
         embedding_size:
           description: "Size of the embeddings"
           default: 50
@@ -39,19 +39,19 @@
           default: 1
         num_epochs:
           description: "Number of epochs"
-          default: 1
+          default: 20
         batch_size:
           description: "Size of a batch"
           default: 256
         learning_rate:
           description: "Learning rate"
-          default: 1e-5
+          default: 1e-2
         pre_rnn_layers_num:
           description: "Number of fully connected layers before RNN input"
           default: 2
         pre_rnn_dim:
           description: "Size of pre RNN FC layers"
-          default: 376
+          default: 180
         rnn_module:
           description: "RNN module to be used"
           choices: ["rnn", "lstm", "gru"]

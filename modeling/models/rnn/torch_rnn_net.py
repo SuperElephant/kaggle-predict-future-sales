@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import time
-from torch.optim.lr_scheduler import StepLR
+from torch.optim.lr_scheduler import ExponentialLR
 from torch.nn.utils.rnn import *
 from torch.utils.data import DataLoader
 from modeling.models.base_model import Model
@@ -140,7 +140,7 @@ class RNNNet(torch.nn.Module, Model):
         preprocessed_train_data = self.data_preprocessor.preprocess_train_dataset(train, y_train)
         train_dataset = RNNDataset(*preprocessed_train_data, self.dense_sets_holder, self.average_dense_sets)
 
-        train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=3,
+        train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=2,
                                   collate_fn=self.zip_collate, pin_memory=True)
 
         valid_set_tuple_postproc = None
@@ -165,6 +165,11 @@ class RNNNet(torch.nn.Module, Model):
         self.to(self.target_device, non_blocking=True)
 
         optimizer = torch.optim.Adam(self.parameters(), self.learning_rate)
+
+        decreases = 0
+        max_decreases = 5
+        scheduler = ExponentialLR(optimizer, 0.1)
+        optimizer.step()
 
         # For plotting and monitoring purposes
         x_losses = []
@@ -221,6 +226,14 @@ class RNNNet(torch.nn.Module, Model):
                         test_loss = torch.sqrt(
                             F.mse_loss(results.clamp(0, 20), torch.Tensor(y_test.to_numpy()).squeeze())
                         ).item()
+
+                        test_moving_avg = sum(test_losses[-3:])/len(test_losses[-3:])
+
+                        if test_loss/test_moving_avg > 0.95 and decreases < max_decreases:
+                            print(optimizer)
+                            scheduler.step()
+                            decreases += 1
+                            print(optimizer)
 
                         test_losses.append(test_loss)
                         print('[%d, %5d] test-loss: %.3f' % (epoch + 1, i + 1, test_loss))
@@ -306,5 +319,5 @@ class RNNNet(torch.nn.Module, Model):
 
     def get_test_loader(self, rnn_dataset):
         return DataLoader(
-                rnn_dataset, batch_size=3200, shuffle=False, num_workers=3, collate_fn=self.zip_collate, pin_memory=True
+                rnn_dataset, batch_size=3200, shuffle=False, num_workers=1, collate_fn=self.zip_collate, pin_memory=True
             )
