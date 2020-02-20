@@ -169,7 +169,7 @@ class RNNNet(torch.nn.Module, Model):
         decreases = 0
         max_decreases = 5
         scheduler = ExponentialLR(optimizer, 0.1)
-        optimizer.step()
+        scheduler.step()
 
         # For plotting and monitoring purposes
         x_losses = []
@@ -319,5 +319,5 @@ class RNNNet(torch.nn.Module, Model):
 
     def get_test_loader(self, rnn_dataset):
         return DataLoader(
-                rnn_dataset, batch_size=3200, shuffle=False, num_workers=1, collate_fn=self.zip_collate, pin_memory=True
+                rnn_dataset, batch_size=3200, shuffle=False, num_workers=0, collate_fn=self.zip_collate, pin_memory=True
             )
